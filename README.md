@@ -33,13 +33,13 @@ spec:
   source:
     git:
       ref: master
-      uri: https://github.com/mouachan/appfinment.git
+      uri: https://github.com/mouachan/appfinment-cicd.git
     sourceSecret:
       name: github
     type: Git
   strategy:
     jenkinsPipelineStrategy:
-      jenkinsfilePath: src/main/resources/jenkinsFile
+      jenkinsfilePath: jenkinsFile
     type: JenkinsPipeline
   successfulBuildsHistoryLimit: 5
   triggers: []
