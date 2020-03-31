@@ -2,7 +2,7 @@
 Jenkins Pipeline
 
 Build Config
-
+```yaml
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
@@ -34,11 +34,12 @@ spec:
   triggers: []
 status:
   lastVersion: 43
-
+```bash
 Creation of Git secret 
-
+```
 oc create secret generic github --from-literal=username=user --from-literal=password=password
-
+```
 Synchronise Openshift secret with Jenkins plugins
-
+```bash
 oc label secret github credential.sync.jenkins.openshift.io=true
+```
