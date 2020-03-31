@@ -34,12 +34,12 @@ spec:
   triggers: []
 status:
   lastVersion: 43
-```bash
+
 Creation of Git secret 
-```
+```sh
 oc create secret generic github --from-literal=username=user --from-literal=password=password
 ```
 Synchronise Openshift secret with Jenkins plugins
-```bash
+```sh
 oc label secret github credential.sync.jenkins.openshift.io=true
 ```
