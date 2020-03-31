@@ -1,4 +1,3 @@
-node('maven') {
   // define commands
   def mvnCmd = "mvn"
   // injection of environment variables is not done so set them here...
@@ -7,27 +6,78 @@ node('maven') {
   def githubId = "appfinment-cicd-github"
   def devProject = "appfinment"
   def applicationName = "appfinment"
+  def artifact = ""
+
+// namespaces
+def namespace_dev = "appfinmentdev-lab"
+def namespace_acp = "appfinmentacp-lab"
+def namespace_prd = "appfinmentprd-lab"		
+
+
+/* version management
+ * image version should be parameterized
+ * git tag name?
+*/
+def appname = "appfinment"
+def image_version = "${params.IMAGE_VERSION}"
+def publish_sidecar = "${params.NAMESPACE_PROD}"
+
+def registry = "docker-registry.default.svc:5000"
+
+// maven variables
+def version
+
+
+
+def generateConfigMap(namespace) {
+  sh "oc delete cm ${artifact} -n ${namespace} --ignore-not-found=true"
+	sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace}"
+	return 0
+}
+def setEnvVars(namespace){
+    def sso_server
+    def sso_realm
+    def sso_key
+    
+    if ( "${namespace}" == "pocfusedev-lab") {
+        sso_server='<server>'
+        sso_realm='<realm>'
+        sso_key='<key>'
+    } else {
+        // at the moment we keep the same info as dev
+        sso_server='<server>'
+        sso_realm='<realm>'
+        sso_key=''
+    }
+    
+    sh "oc set env -n ${namespace} dc/openidconnect-gateway SSO_SERVER_URL=${sso_server}"
+    sh "oc set env -n ${namespace} dc/openidconnect-gateway SSO_REALM=${sso_realm}"
+    sh "oc set env -n ${namespace} dc/openidconnect-gateway SSO_SERVER_RSA_PUBLIC_KEY=${sso_key}"
+}
+
+node('maven') {
+
 
   stage 'checkout'
      git branch: sourceRef, url: sourceUrl, credentialsId: githubId  
   stage 'build'
      sh "ls -ail /tmp/workspace/appfinment-cicd/appfinment-cicd-appfinment-bc"
      sh "${mvnCmd} clean install -DskipTests=true"
-    //}
   stage 'test'
     sh "${mvnCmd} test"
-  /*stage 'deployInDev'
-    sh "rm -rf oc-build && mkdir -p oc-build/deployments"
-    sh "cp target/openshift-tasks.war oc-build/deployments/ROOT.war"
+  stage 'deployInDev'
+      echo "building container image"
+      sh "oc new-project ${namespace_dev}"
+    	sh "mvn fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
+    	echo "generating ConfigMap"
+			generateConfigMap(namespace_dev)    
+    //sh "rm -rf oc-build && mkdir -p oc-build/deployments"
+   // sh "cp target/openshift-tasks.war oc-build/deployments/ROOT.war"
     // clean up. keep the image stream
-    sh "oc project ${devProject}"
-    sh "oc delete bc,dc,svc,route -l application=${applicationName} -n ${devProject}"
+
+    //sh "oc delete bc,dc,svc,route -l application=${applicationName} -n ${devProject}"
     // create build. override the exit code since it complains about existing imagestream
-    sh "oc new-build --name=${applicationName} --image-stream=jboss-eap70-openshift --binary=true --labels=application=${applicationName} -n ${devProject} || true"
-    // build image
-    sh "oc start-build ${applicationName} --from-dir=oc-build --wait=true -n ${devProject}"
-    // deploy image
-    sh "oc new-app ${applicationName}:latest -n ${devProject}"
-    sh "oc expose svc/${applicationName} -n ${devProject}"*/
+    //sh "oc new-build --name=${applicationName} --image-stream=jboss-eap70-openshift --binary=true --labels=application=${applicationName} -n ${devProject} || true"
+
 }
 
