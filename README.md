@@ -1,7 +1,18 @@
 # appfinment-cicd
 Jenkins Pipeline
 
-Build Config
+Create a git secret 
+
+```sh
+oc create secret generic github --from-literal=username=user --from-literal=password=password
+```
+Synchronise Openshift secret with Jenkins plugins
+
+```sh
+oc label secret github credential.sync.jenkins.openshift.io=true
+```
+
+Create a build config on openshift with git source and 
 ```yaml
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
@@ -34,12 +45,5 @@ spec:
   triggers: []
 status:
   lastVersion: 43
+```
 
-Creation of Git secret 
-```sh
-oc create secret generic github --from-literal=username=user --from-literal=password=password
-```
-Synchronise Openshift secret with Jenkins plugins
-```sh
-oc label secret github credential.sync.jenkins.openshift.io=true
-```
