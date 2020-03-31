@@ -67,7 +67,7 @@ node('maven') {
     sh "${mvnCmd} test"
   stage 'deployInDev'
       echo "building container image"
-      sh "oc new-project ${namespace_dev}"
+      sh "oc project ${namespace_dev}"
     	sh "mvn fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
     	echo "generating ConfigMap"
 			generateConfigMap(namespace_dev)    
