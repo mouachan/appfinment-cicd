@@ -70,7 +70,7 @@ node('maven') {
       sh "oc whoami"
       sh "oc get pods"
       sh "oc project ${namespace_dev}"
-    	sh "mvn fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
+    	sh "${mvnCmd} -X fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
     	echo "generating ConfigMap"
 			generateConfigMap(namespace_dev)    
     //sh "rm -rf oc-build && mkdir -p oc-build/deployments"
