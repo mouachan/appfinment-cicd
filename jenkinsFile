@@ -59,7 +59,7 @@ node('maven') {
 
 
   stage 'checkout'
-     git branch: sourceRef, url: sourceUrl, credentialsId: github  
+     git branch: sourceRef, url: sourceUrl, credentialsId: githubId  
   stage 'build'
      sh "ls -ail /tmp/workspace/appfinment-cicd/appfinment-cicd-appfinment-bc"
      sh "${mvnCmd} clean install -DskipTests=true"
