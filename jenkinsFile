@@ -8,18 +8,13 @@
   def applicationName = "appfinment"
   def artifact = "openidconnect-gateway"
   def version = "1.0.0"
-
-
 // namespaces
 def namespace_dev = "appfinmentdev-lab"
 def namespace_acp = "appfinmentacp-lab"
 def namespace_prd = "appfinmentprd-lab"		
- 
-
 def appname = "appfinment"
 def image_version = "${params.IMAGE_VERSION}"
 def publish_sidecar = "${params.NAMESPACE_PROD}"
-
 def registry = "docker-registry.default.svc:5000"
 
 // maven variables
@@ -67,14 +62,5 @@ node('maven') {
     	sh "${mvnCmd} fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
       sh "oc delete cm ${artifact} -n ${namespace_dev} --ignore-not-found=true"
 	    sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace_dev}"
-
-    //sh "rm -rf oc-build && mkdir -p oc-build/deployments"
-   // sh "cp target/openshift-tasks.war oc-build/deployments/ROOT.war"
-    // clean up. keep the image stream
-
-    //sh "oc delete bc,dc,svc,route -l application=${applicationName} -n ${devProject}"
-    // create build. override the exit code since it complains about existing imagestream
-    //sh "oc new-build --name=${applicationName} --image-stream=jboss-eap70-openshift --binary=true --labels=application=${applicationName} -n ${devProject} || true"
-
 }
 
