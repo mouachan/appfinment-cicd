@@ -6,8 +6,6 @@
   def githubId = "appfinment-cicd-github"
   def devProject = "appfinment"
   def applicationName = "appfinment"
-  artifact = ""
-  version = ""
 
 
 // namespaces
@@ -71,9 +69,9 @@ node('maven') {
       echo "Using project: ${openshift.project()}"
     	sh "${mvnCmd} fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
     	echo "generating ConfigMap"
-			pom = readMavenPom file: 'pom.xml'
-      artifact = pom.artifactId
-      version = pom.version
+			def pom = readMavenPom file: 'pom.xml'
+      def artifact = pom.artifactId
+      def version = pom.version
       echo "===== >${pom} ${pom.artifact} ${pom.version}"
       sh "oc delete cm ${artifact} -n ${namespace} --ignore-not-found=true"
 	    sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace}"   
