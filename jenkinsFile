@@ -64,9 +64,10 @@ node('maven') {
     	sh "${mvnCmd} fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
       sh "oc delete cm ${artifact} -n ${namespace_dev} --ignore-not-found=true"
 	    sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace_dev}"
+      setEnvVars(namespace_dev)
       sh "oc process openidconnect-template -n appfinment-cicd --param APP_NAME=${artifact} --param APP_VERSION=${version} --param IMAGE_VERSION=${image_version} | oc apply -n ${namespace_dev} -f -"
       echo "configuring Red Hat SSO parameters"
-      setEnvVars(namespace_dev)
+    
       echo "promoting image"
 			sh "oc tag ${namespace_dev}/${artifact}:latest ${namespace_acp}/${artifact}:${image_version}"
   stage 'deployInAcp'
