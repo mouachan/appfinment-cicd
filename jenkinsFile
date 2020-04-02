@@ -67,6 +67,8 @@ node('maven') {
       sh "oc process openidconnect-template -n appfinment-cicd --param APP_NAME=${artifact} --param APP_VERSION=${version} --param IMAGE_VERSION=${image_version} | oc apply -n ${namespace_dev} -f -"
       echo "configuring Red Hat SSO parameters"
       setEnvVars(namespace_dev)
+      echo "promoting image"
+			sh "oc tag ${namespace_dev}/${artifact}:latest ${namespace_acp}/${artifact}:${image_version}"
   stage 'deployInAcp'
      echo "creating openshift deployment objects"
 		 echo "generating ConfigMap"
