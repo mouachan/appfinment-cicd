@@ -6,8 +6,8 @@
   def githubId = "appfinment-cicd-github"
   def devProject = "appfinment"
   def applicationName = "appfinment"
-  def artifact = ""
-  def version = ""
+  artifact = ""
+  version = ""
 
 
 // namespaces
@@ -69,7 +69,7 @@ node('maven') {
   stage 'deployInDev'
       echo "building container image"
       echo "Using project: ${openshift.project()}"
-    	sh "${mvnCmd} -X fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
+    	sh "${mvnCmd} fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
     	echo "generating ConfigMap"
 			pom = readMavenPom file: 'pom.xml'
       artifact = pom.artifactId
