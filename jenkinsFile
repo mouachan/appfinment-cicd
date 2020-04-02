@@ -71,7 +71,12 @@ node('maven') {
       echo "Using project: ${openshift.project()}"
     	sh "${mvnCmd} -X fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
     	echo "generating ConfigMap"
-			generateConfigMap(namespace_dev)    
+			pom = readMavenPom file: 'pom.xml'
+      artifact = pom.artifactId
+      version = pom.version
+      echo "===== >${pom} ${pom.artifact} ${pom.version}"
+      sh "oc delete cm ${artifact} -n ${namespace} --ignore-not-found=true"
+	    sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace}"   
     //sh "rm -rf oc-build && mkdir -p oc-build/deployments"
    // sh "cp target/openshift-tasks.war oc-build/deployments/ROOT.war"
     // clean up. keep the image stream
