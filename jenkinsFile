@@ -6,6 +6,8 @@
   def githubId = "appfinment-cicd-github"
   def devProject = "appfinment"
   def applicationName = "appfinment"
+  def artifact = "openidconnect-gateway"
+  def version = "1.0.0"
 
 
 // namespaces
@@ -62,19 +64,7 @@ node('maven') {
     sh "${mvnCmd} test"
   stage 'deployInDev'
       echo "building container image"
-      echo "Using project: ${openshift.project()}"
     	sh "${mvnCmd} fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
-    	echo "generating ConfigMap"
-
-			// pom = readMavenPom file: 'pom.xml'
-      // artifact = pom.artifactId
-      // version = pom.version
-
-      // pom = readMavenPom file: 'pom.xml'
-      artifact = "openidconnect-gateway"
-      version = "1.0.0"
-
-
       sh "oc delete cm ${artifact} -n ${namespace_dev} --ignore-not-found=true"
 	    sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace_dev}"
 
