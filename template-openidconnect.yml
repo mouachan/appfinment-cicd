@@ -6,12 +6,11 @@ metadata:
   annotations:
     description: Template to create application with Token sidecar
     iconClass: icon-rh-integration
-    openshift.io/display-name: Red Hat Fuse 7.4 JWT
+    openshift.io/display-name: Red Hat Openshift Runtime JWT Proxy
     openshift.io/provider-display-name: Red Hat, Inc.
     tags: java,openidconnect,sidecar,springboot
     version: "1.2"
   name: openidconnect-template
-  namespace: openshift
 objects:
 - apiVersion: v1
   kind: Service
