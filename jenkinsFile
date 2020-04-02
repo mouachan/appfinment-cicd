@@ -13,8 +13,7 @@ def namespace_dev = "appfinmentdev-lab"
 def namespace_acp = "appfinmentacp-lab"
 def namespace_prd = "appfinmentprd-lab"		
 def appname = "appfinment"
-def image_version = "${params.IMAGE_VERSION}"
-def publish_sidecar = "${params.NAMESPACE_PROD}"
+def image_version = "${ENV.IMAGE_VERSION}"
 def registry = "docker-registry.default.svc:5000"
 
 // maven variables
@@ -69,16 +68,7 @@ node('maven') {
 		 echo "generating ConfigMap"
 		 sh "oc delete cm ${artifact} -n ${namespace_acp} --ignore-not-found=true"
 	   sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace_acp}"
-     sh "oc process fuse-openidconnect-template -n openshift --param APP_NAME=${artifact} --param APP_VERSION=${version} --param IMAGE_VERSION=${image_version} | oc apply -n ${namespace_acp} -f -"
+     sh "oc process openidconnect-template -n appfinment-cicd --param APP_NAME=${artifact} --param APP_VERSION=${version} --param IMAGE_VERSION=${image_version} | oc apply -n ${namespace_acp} -f -"
 		 setEnvVars(namespace_acp)
-   stage 'deployInProd'
-     echo "creating openshift deployment objects"
-		 echo "generating ConfigMap"
-		 sh "oc delete cm ${artifact} -n ${namespace_prd} --ignore-not-found=true"
-	   sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace_prd}"
-     sh "oc process fuse-openidconnect-template -n openshift --param APP_NAME=${artifact} --param APP_VERSION=${version} --param IMAGE_VERSION=${image_version} | oc apply -n ${namespace_prd} -f -"
-		 setEnvVars(namespace_prd)
-									
-
 }
 
