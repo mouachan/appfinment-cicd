@@ -13,7 +13,7 @@ def namespace_dev = "appfinmentdev-lab"
 def namespace_acp = "appfinmentacp-lab"
 def namespace_prd = "appfinmentprd-lab"		
 def appname = "appfinment"
-def image_version = "${ENV.IMAGE_VERSION}"
+def image_version = "${env.IMAGE_VERSION}"
 def registry = "docker-registry.default.svc:5000"
 
 // maven variables
