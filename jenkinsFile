@@ -42,7 +42,10 @@ def setEnvVars(namespace){
         sso_realm='<realm>'
         sso_key=''
     }
-    
+    echo "oc set env -n ${namespace} dc/openidconnect-gateway SSO_SERVER_URL=${sso_server}"
+    echo "oc set env -n ${namespace} dc/openidconnect-gateway SSO_REALM=${sso_realm}"
+    echo "oc set env -n ${namespace} dc/openidconnect-gateway SSO_SERVER_RSA_PUBLIC_KEY=${sso_key}"
+
     sh "oc set env -n ${namespace} dc/openidconnect-gateway SSO_SERVER_URL=${sso_server}"
     sh "oc set env -n ${namespace} dc/openidconnect-gateway SSO_REALM=${sso_realm}"
     sh "oc set env -n ${namespace} dc/openidconnect-gateway SSO_SERVER_RSA_PUBLIC_KEY=${sso_key}"
