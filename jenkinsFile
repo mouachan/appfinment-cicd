@@ -28,9 +28,6 @@ def registry = "docker-registry.default.svc:5000"
 
 // maven variables
 
-
-
-
 def generateConfigMap(namespace) {
   sh "oc delete cm ${artifact} -n ${namespace} --ignore-not-found=true"
 	sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace}"
@@ -58,14 +55,12 @@ def setEnvVars(namespace){
 }
 
 node('maven') {
-
-
   stage 'checkout'
      git branch: sourceRef, url: sourceUrl, credentialsId: githubId
      pom = readMavenPom file: 'pom.xml'
-     echo "===== >${pom} ${pom.artifact} ${pom.version}"
      artifact = pom.artifactId
      version = pom.version
+     echo "===== >${pom} ${pom.artifact} ${pom.version}"
   stage 'build'
      sh "ls -ail /tmp/workspace/appfinment-cicd/appfinment-cicd-appfinment-bc"
      sh "${mvnCmd} clean install -DskipTests=true"
