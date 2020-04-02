@@ -1,0 +1,214 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: openidconnect-template
+metadata:
+  annotations:
+    description: Template to create application with Token sidecar
+    iconClass: icon-rh-integration
+    openshift.io/display-name: Red Hat Fuse 7.4 JWT
+    openshift.io/provider-display-name: Red Hat, Inc.
+    tags: java,openidconnect,sidecar,springboot
+    version: "1.2"
+  name: openidconnect-template
+  namespace: openshift
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The openidconnect sidecar
+    labels:
+      app: ${APP_NAME}
+      group: com.redhat.integration
+      provider: springboot-keycloak
+      version: ${APP_VERSION}
+    name: ${APP_NAME}
+  spec:
+    ports:
+    - name: ${APP_NAME}
+      port: ${{SERVICE_PORT}}
+      targetPort: ${{WEB_PORT}}      
+    selector:
+      app: ${APP_NAME}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: ${APP_NAME}
+      group: com.redhat.integration
+      provider: springboot-keycloak
+      version: ${APP_VERSION}
+    name: ${APP_NAME}
+  spec:
+    replicas: 1
+    selector:
+      app: ${APP_NAME}
+      group: com.redhat.integration
+      provider: springboot-keycloak
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 3600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: ${APP_NAME}
+          group: com.redhat.integration
+          provider: springboot-keycloak
+          version: ${APP_VERSION}
+        name: ${APP_NAME}
+      spec:
+        containers:
+        - env:
+          - name: KUBERNETES_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: AB_JOLOKIA_OFF
+            value: 'true'   
+          - name: TARGET_PORT
+            value: ${TARGET_PORT}
+          - name: SSO_CLIENTID
+            value: ${SSO_CLIENTID}
+          - name: SSO_SECRET
+            value: ${SSO_SECRET}
+          - name: SSO_SERVER_URL
+            value: ${SSO_SERVER_URL}
+          - name: SSO_REALM
+            value: ${SSO_REALM}        
+          - name: SSO_SERVER_RSA_PUBLIC_KEY
+            value: ${SSO_SERVER_RSA_PUBLIC_KEY}
+          - name: SSO_APP_CONTEXT
+            value: ${SSO_APP_CONTEXT}
+                
+          image: ${APP_NAME}:${IMAGE_VERSION}
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: ${HEALTHCHECK_PATH}
+              port: ${{HEALTHCHECK_PORT}}
+              scheme: HTTP
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: ${APP_NAME}
+          ports:
+          - containerPort: ${{WEB_PORT}}
+            name: proxy
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: ${HEALTHCHECK_PATH}
+              port: ${{HEALTHCHECK_PORT}}
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: ${{CPU_LIMIT}}
+              memory: ${MEMORY_LIMIT}              
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEMORY_REQUEST}              
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          privileged: false
+        terminationGracePeriodSeconds: 30
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APP_NAME}
+        from:
+          kind: ImageStreamTag
+          name: ${APP_NAME}:latest
+      type: ImageChange
+    - type: ConfigChange
+parameters:
+- displayName: Application Name
+  name: APP_NAME
+  required: true
+- displayName: Application Maven Version
+  name: APP_VERSION
+  required: true
+- displayName: Application Image Version
+  name: IMAGE_VERSION
+  required: true  
+  value: "latest"
+- displayName: The port to expose the service
+  name: SERVICE_PORT
+  required: true
+  value: "8080"
+- displayName: The path of the healthcheck for the application
+  name: HEALTHCHECK_PATH
+  required: true
+  value: /actuator/health
+- displayName: The port of the healthcheck for the application
+  name: HEALTHCHECK_PORT
+  required: true
+  value: "8180"
+- displayName: The web port of the application
+  name: WEB_PORT
+  required: true
+  value: "8180" 
+- displayName: The client ID for RH SSO
+  name: SSO_CLIENTID
+  required: false
+  value: "test"  
+- displayName: The port of the target application to proxy
+  name: TARGET_PORT
+  required: false
+  value: "8082"  
+- displayName: The CPU Limit for the application
+  name: CPU_LIMIT
+  required: true
+  value: "0.5"
+- displayName: The Memory Limit for the application
+  name: MEMORY_LIMIT
+  required: true
+  value: "500M"
+- displayName: The CPU Request for the application
+  name: CPU_REQUEST
+  required: true
+  value: "0.2"
+- displayName: The Memory Request for the application
+  name: MEMORY_REQUEST
+  required: true
+  value: "150M" 
+- displayName: The base URL of the SSO server
+  name: SSO_SERVER_URL
+  required: true
+- displayName: The Realm of the SSO server
+  name: SSO_REALM
+  required: true
+- displayName: The Client secret
+  name: SSO_SECRET
+  required: true
+- displayName: The context path of the application
+  name: SSO_APP_CONTEXT
+  required: true
+  value: "/*"
+- displayName: The public key (RSA type) of the SSO server
+  name: SSO_SERVER_RSA_PUBLIC_KEY
+  required: true
+  
