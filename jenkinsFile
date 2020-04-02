@@ -7,6 +7,8 @@
   def devProject = "appfinment"
   def applicationName = "appfinment"
   def artifact = ""
+  def version = ""
+
 
 // namespaces
 def namespace_dev = "appfinmentdev-lab"
@@ -25,7 +27,7 @@ def publish_sidecar = "${params.NAMESPACE_PROD}"
 def registry = "docker-registry.default.svc:5000"
 
 // maven variables
-def version
+
 
 
 
@@ -39,7 +41,7 @@ def setEnvVars(namespace){
     def sso_realm
     def sso_key
     
-    if ( "${namespace}" == "pocfusedev-lab") {
+    if ( "${namespace}" == "appfinmentdev-lab") {
         sso_server='<server>'
         sso_realm='<realm>'
         sso_key='<key>'
@@ -59,7 +61,11 @@ node('maven') {
 
 
   stage 'checkout'
-     git branch: sourceRef, url: sourceUrl, credentialsId: githubId  
+     git branch: sourceRef, url: sourceUrl, credentialsId: githubId
+     pom = readMavenPom file: 'pom.xml'
+     echo "===== >${pom} ${pom.artifact} ${pom.version}"
+     artifact = pom.artifactId
+     version = pom.version
   stage 'build'
      sh "ls -ail /tmp/workspace/appfinment-cicd/appfinment-cicd-appfinment-bc"
      sh "${mvnCmd} clean install -DskipTests=true"
@@ -67,9 +73,7 @@ node('maven') {
     sh "${mvnCmd} test"
   stage 'deployInDev'
       echo "building container image"
-      sh "oc whoami"
-      sh "oc project ${namespace_dev}"
-      sh "oc get pods"
+      echo "Using project: ${openshift.project()}"
     	sh "${mvnCmd} -X fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
     	echo "generating ConfigMap"
 			generateConfigMap(namespace_dev)    
