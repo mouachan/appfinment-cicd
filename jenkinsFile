@@ -69,6 +69,7 @@ node('maven') {
       echo "Using project: ${openshift.project()}"
     	sh "${mvnCmd} fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
     	echo "generating ConfigMap"
+      sh "ls -ail"
 			def pom = readMavenPom file: 'pom.xml'
       def artifact = pom.artifactId
       def version = pom.version
