@@ -14,10 +14,6 @@ def namespace_acp = "appfinmentacp-lab"
 def namespace_prd = "appfinmentprd-lab"		
  
 
-/* version management
- * image version should be parameterized
- * git tag name?
-*/
 def appname = "appfinment"
 def image_version = "${params.IMAGE_VERSION}"
 def publish_sidecar = "${params.NAMESPACE_PROD}"
@@ -69,7 +65,7 @@ node('maven') {
       echo "Using project: ${openshift.project()}"
     	sh "${mvnCmd} fabric8:build -Dmaven.test.skip -Dimage.version=latest -Dfabric8.namespace=${namespace_dev}"
     	echo "generating ConfigMap"
-      sh "ls -ail"
+
 			// pom = readMavenPom file: 'pom.xml'
       // artifact = pom.artifactId
       // version = pom.version
@@ -80,7 +76,8 @@ node('maven') {
 
 
       sh "oc delete cm ${artifact} -n ${namespace_dev} --ignore-not-found=true"
-	    sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace_dev}"   
+	    sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace_dev}"
+
     //sh "rm -rf oc-build && mkdir -p oc-build/deployments"
    // sh "cp target/openshift-tasks.war oc-build/deployments/ROOT.war"
     // clean up. keep the image stream
