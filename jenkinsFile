@@ -12,7 +12,7 @@
 def namespace_dev = "appfinmentdev-lab"
 def namespace_acp = "appfinmentacp-lab"
 def namespace_prd = "appfinmentprd-lab"		
-
+ 
 
 /* version management
  * image version should be parameterized
@@ -79,8 +79,8 @@ node('maven') {
       version = "1.0.0"
 
 
-      sh "oc delete cm ${artifact} -n ${namespace} --ignore-not-found=true"
-	    sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace}"   
+      sh "oc delete cm ${artifact} -n ${namespace_dev} --ignore-not-found=true"
+	    sh "oc create cm ${artifact} --from-file=src/main/resources/application.properties -n ${namespace_dev}"   
     //sh "rm -rf oc-build && mkdir -p oc-build/deployments"
    // sh "cp target/openshift-tasks.war oc-build/deployments/ROOT.war"
     // clean up. keep the image stream
